@@ -32,16 +32,25 @@ class main():
         self.win=Frame(self.top)
 
 
-        phraseLabel=Label(self.win,text=self.phrase)
-        phraseLabel.pack()
+        self.phraseLabel=Label(self.win, text=self.phrase)
+        self.phraseLabel.pack()
 
-        userPhrase=Label(self.win,text=self.userP)
-        userPhrase.pack()
+        self.userPhrase=Label(self.win,text=self.userP)
+        self.userPhrase.pack()
+
+        #canvas=Canvas(self.win)
+        #canvas.pack()
+        self.text=Text(self.win, height=25, width=60)
+        self.text.insert('end',self.phrase)
+        self.text['state']=DISABLED
+        self.text.pack()
+
+
 
         self.win.bind('<Key>', lambda event :self.check(event))
         self.win.focus_set()
         self.win.pack()
-#############for some reason it wont recognize key inputs
+
         #self.win.mainloop()
 
     def check(self,event):
@@ -51,7 +60,23 @@ class main():
         if temp==wanted:
             print(temp)
             self.userP=self.userP+temp
+            self.highlight(self.text)
         else:
             self.error+=1
+
+    def highlight(self,text):
+        wanted=len(self.userP)-1
+
+        text.tag_delete('red')
+        
+
+        txtInput=(str(1)+'.'+str(wanted))
+        print(txtInput)
+        text.tag_add('red',txtInput)
+        text.tag_config('red',foreground='red')
+
+
+
+
 
 main()
