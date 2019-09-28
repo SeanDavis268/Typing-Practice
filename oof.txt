@@ -1,0 +1,3 @@
+this is the practice text file for the typing practice program.
+I will be a computer programmer.
+I will be a computer programmer
