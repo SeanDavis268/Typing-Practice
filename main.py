@@ -63,7 +63,7 @@ class main():
 
             print('loaded')
             self.txt=self.file.readline()
-            self.txt=self.txt.decode('ascii', errors='replace')
+            self.txt=self.txt.decode('ascii', errors='ignore')
             print(self.txt)
 
         except:
