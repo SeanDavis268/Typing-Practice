@@ -59,10 +59,12 @@ class main():
             #print(container)
              #IT currently won't accept any input as correct
             print(yeet)
-            self.file=open(yeet,'r')
+            self.file=open(yeet,'rb')
+
             print('loaded')
             self.txt=self.file.readline()
-            print(txt)
+            self.txt=self.txt.decode('ascii', errors='replace')
+            print(self.txt)
 
         except:
             print('failed')
@@ -113,14 +115,13 @@ class main():
         if len(self.phrase)-1==len(self.userP):
             print('########################')
             self.txt=self.file.readline()
+            self.txt=self.txt.decode(encoding='ascii')
             self.phrase=self.txt
-            print(self.phrase)
+            #print(self.phrase)
             self.text.config(state=NORMAL)
             self.text.delete('1.0','end')
             self.text.insert('1.0',self.phrase)
             self.text.config(state=DISABLED)
-
-
 
 
             #self.phrase=  #clear the data
