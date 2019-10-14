@@ -7,18 +7,21 @@ import os
 
 
 class main():
+    """This class is the first window when the program is ran. It checks
+       the current directory for txt documents and displays them. They can then
+       be selected by entering their names into the entry box."""
     def __init__(self):
-        self.top=Tk()
-        Label(self.top, text='Pick what to practice').pack()
-        self.phrase=''
-        self.userP=''
-        self.error=0
+        self.top = Tk()
+        Label(self.top, text = 'Pick what to practice').pack()
+        self.phrase = ''
+        self.userP = ''
+        self.error = 0
 
-        self.start= Frame(self.top)
+        self.start = Frame(self.top)
         self.start.pack()
-        self.phrase='the phrase didn"t load' #default phrase
+        self.phrase = 'the phrase didn"t load' #default phrase
         ####file reading#####
-        cwd=os.getcwd()
+        cwd = os.getcwd()
         textFiles = [f for f in os.listdir(cwd) if f.endswith('.txt')]
 
         #i=-1
@@ -30,16 +33,16 @@ class main():
             #this is likely because when the button is pushed it reads the last each and the txt for the button reads it as its iterated
 
 
-        Label(self.start, text=textFiles).pack()
-        entryBox=Text(self.start,width = '10', height = '1')
-        myList=[]
+        Label(self.start, text = textFiles).pack()
+        entryBox = Text(self.start,width = '10', height = '1')
+        myList = []
         myList.append(entryBox)
         entryBox.pack()
-        widget=Button(self.start,text='click to load file', command=lambda:self.phraseGen(entryBox.get('1.0',END),textFiles))
+        widget = Button(self.start,text='click to load file', command=lambda:self.phraseGen(entryBox.get('1.0',END),textFiles))
         widget.pack()
 
-        Button(self.start,text='woodchuck',command=lambda:self.phraseGen('how much would could a woodchuck chuck')).pack()
-        Button(self.start,text='tounge tied',command=lambda:self.phraseGen('Sally sells sea shells down by the sea shore')).pack()
+        Button(self.start,text = 'woodchuck',command = lambda:self.phraseGen('how much would could a woodchuck chuck')).pack()
+        Button(self.start,text = 'tounge tied',command = lambda:self.phraseGen('Sally sells sea shells down by the sea shore')).pack()
 
 
 
@@ -49,46 +52,52 @@ class main():
 
 
     def phraseGen(self,txt,container=False):
-        cwd=os.getcwd()
-        files= [f for f in os.listdir(cwd) if f.endswith('.txt')]
+        """This method takes the txt doc and attempts to read its first line
+           It reads the doc as ascii to avoid characters not on the keyboard.
+           After it starts phase2()."""
+        cwd = os.getcwd()
+        files = [f for f in os.listdir(cwd) if f.endswith('.txt')]
         #print(files)
         print(txt)
-        yeet=str(txt[0:-1])
-        self.txt=txt
+        yeet = str(txt[0:-1])
+        self.txt = txt
         try:
             #print(container)
              #IT currently won't accept any input as correct
             print(yeet)
-            self.file=open(yeet,'rb')
+            self.file = open(yeet,'rb')
 
             print('loaded')
-            self.txt=self.file.readline()
-            self.txt=self.txt.decode('ascii', errors='ignore')
+            self.txt = self.file.readline()
+
+            self.txt = self.txt.decode('ascii', errors = 'ignore')
             print(self.txt)
 
         except:
             print('failed')
 
-        self.phrase=self.txt
+        self.phrase = self.txt
         #print(self.phrase)
         self.start.destroy()
         self.phase2()
 
     def phase2(self):
-        self.win=Frame(self.top)
+        """This is the window where the the text from the doc is displayed.
+           It grabs key inputs and checks them with check()"""
+
+        self.win = Frame(self.top)
 
 
-        self.phraseLabel=Label(self.win, text=self.phrase)
+        self.phraseLabel = Label(self.win, text = self.phrase)
         self.phraseLabel.pack()
 
-        self.userPhrase=Label(self.win,text=self.userP)
+        self.userPhrase=Label(self.win,text = self.userP)
         self.userPhrase.pack()
 
-        #canvas=Canvas(self.win)
-        #canvas.pack()
-        self.text=Text(self.win, height=25, width=65)
+
+        self.text=Text(self.win, height = 25, width = 65)
         self.text.insert('end',self.phrase)
-        self.text['state']=DISABLED
+        self.text['state'] = DISABLED
         self.text.pack()
 
 
@@ -100,47 +109,61 @@ class main():
         #self.win.mainloop()
 
     def check(self,event):
-        temp=str(event.char)
+        """This method checks the users input to the desired key in the txt.
+            If the key is correct it calls highlight(). If not it records an
+            error. It also calls for the next line to be read from the file if
+            the current line is finished."""
+
+        temp = str(event.char)
         #print(temp)
-        wanted=self.phrase[len(self.userP)]
+        wanted = self.phrase[len(self.userP)]
 
 
-        if temp==wanted:
+        if temp == wanted:
             print(temp)
-            self.userP=self.userP+temp
+            self.userP = self.userP + temp
             self.highlight(self.text)
         else:
-            self.error+=1
+            self.error += 1
 
-        if len(self.phrase)-1==len(self.userP):
-            print('########################')
-            self.txt=self.file.readline()
-            self.txt=self.txt.decode(encoding='ascii')
-            self.phrase=self.txt
-            #print(self.phrase)
-            self.text.config(state=NORMAL)
-            self.text.delete('1.0','end')
-            self.text.insert('1.0',self.phrase)
-            self.text.config(state=DISABLED)
+        if len(self.phrase) - 1 == len(self.userP):
+            self.nextLine()
+
+    def nextLine(self):
+        print('########################')
+        spaces=0
+        self.txt = self.file.readline()
+        print(self.txt)
+        self.txt = self.txt.decode(encoding = 'ascii')
+
+        if len(self.txt.strip()) == 0 : #skips blank lines
+            print('skipped')
+            self.nextLine()
+        while self.txt[spaces]==' ': #removes spaces from the start of the line
+            spaces+=1
+        print(spaces)
+        self.phrase = self.txt[spaces:]
+
+        self.text.config(state = NORMAL)
+        self.text.delete('1.0','end')
+        self.text.insert('1.0',self.phrase)
+        self.text.config(state = DISABLED)
 
 
-            #self.phrase=  #clear the data
-            self.userP=''
+        #self.phrase=  #clear the data
+        self.userP = ''
 
 
     def highlight(self,text):
-        wanted=len(self.userP)
+        """ This simply highlights the desired character."""
+        wanted = len(self.userP)
 
         text.tag_delete('red')
 
 
-        txtInput=(str(1)+'.'+str(wanted))
+        txtInput = (str(1) + '.' + str(wanted))
         print(txtInput)
         text.tag_add('red',txtInput)
-        text.tag_config('red',foreground='red')
-
-
-
-
+        text.tag_config('red',foreground = 'red')
 
 main()
