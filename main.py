@@ -1,6 +1,6 @@
 from tkinter import *
 import os
-
+import time
 
 
 
@@ -12,7 +12,9 @@ class main():
        be selected by entering their names into the entry box."""
     def __init__(self):
         self.top = Tk()
-        Label(self.top, text = 'Pick what to practice').pack()
+        self.startLabel=Label(self.top, text = "Pick what to practice. Type in the desired file name in the textBox")
+        self.startLabel.pack()
+
         self.phrase = ''
         self.userP = ''
         self.error = 0
@@ -24,17 +26,15 @@ class main():
         cwd = os.getcwd()
         textFiles = [f for f in os.listdir(cwd) if f.endswith('.txt')]
 
-        #i=-1
-        #for each in textFiles:
-            #file=open(each,'r')
-            #Files2Read.append(file)
-            #i+=1
-            #Button(self.start, text=each, command=lambda:self.phraseGen(i,textFiles)).pack() #for some reason it always loads the text as the last txt docs name
-            #this is likely because when the button is pushed it reads the last each and the txt for the button reads it as its iterated
+        prettyFiles=textFiles[0]
 
+        for each in textFiles[1:]:
+            prettyFiles=prettyFiles+", "+ each
 
-        Label(self.start, text = textFiles).pack()
-        entryBox = Text(self.start,width = '10', height = '1')
+        print(prettyFiles)
+
+        Label(self.start, text = prettyFiles).pack()
+        entryBox = Text(self.start,width = '12', height = '1')
         myList = []
         myList.append(entryBox)
         entryBox.pack()
@@ -66,19 +66,28 @@ class main():
              #IT currently won't accept any input as correct
             print(yeet)
             self.file = open(yeet,'rb')
-
+            #####
+            self.file2=open(yeet,'rb') #allows display of next line
             print('loaded')
             self.txt = self.file.readline()
+            #######
+            self.txt2= self.file2.readline()
+            self.txt2= self.file2.readline()
 
-            self.txt = self.txt.decode('ascii', errors = 'ignore')
+            self.txt = self.txt.decode(encoding ='ascii', errors = 'ignore')
             print(self.txt)
+            ####
+            self.txt2 = self.txt2.decode(encoding ='ascii', errors = 'ignore')
+
 
         except:
             print('failed')
 
         self.phrase = self.txt
         #print(self.phrase)
+        self.startLabel.destroy()
         self.start.destroy()
+
         self.phase2()
 
     def phase2(self):
@@ -86,6 +95,12 @@ class main():
            It grabs key inputs and checks them with check()"""
 
         self.win = Frame(self.top)
+        self.minutes=0
+        self.seconds=0
+        #self.startTime = time.strftime("%H:%M:%S")
+        #self.startTime=self.startTime[3:]#tracks minutes and seconds
+        #self.Sminutes=self.startTime[:2]
+        #self.Sseconds=self.startTime[3:]
 
 
         self.phraseLabel = Label(self.win, text = self.phrase)
@@ -95,10 +110,18 @@ class main():
         self.userPhrase.pack()
 
 
-        self.text=Text(self.win, height = 25, width = 65)
+        self.text=Text(self.win, height = 3, width = 95)
         self.text.insert('end',self.phrase)
         self.text['state'] = DISABLED
         self.text.pack()
+
+        self.text2=Text(self.win, height = 3, width = 95)
+        self.text2.insert('end',self.txt2)
+        self.text2['state'] = DISABLED
+        self.text2.pack()
+
+        self.timer=Label(self.win, text="0")
+        self.timer.pack()
 
 
 
@@ -106,7 +129,29 @@ class main():
         self.win.focus_set()
         self.win.pack()
 
-        #self.win.mainloop()
+        self.updateClock()
+        self.win.mainloop()
+
+    def updateClock(self):
+        """ I realised after creating the code below it was unnecesarrily
+           elaborate and instead implemented a simple counter  """
+        #now = time.strftime("%H:%M:%S")
+        #now=now[3:]
+        #Nminutes=now[:2]
+        #Nseconds=now[3:]
+        #elapsedMin=int(Nminutes)-int(self.Sminutes)
+        #elapsedSec=int(Nseconds)-int(self.Sseconds)
+        #elapsedTime=str(elapsedMin)+":"+str(elapsedSec)
+        #print(elapsedTime)
+        self.seconds+=1
+
+        if self.seconds>=60:
+            self.seconds=0
+            self.minutes+=1
+        totalTime=str(self.minutes)+":"+str(self.seconds)
+        self.timer.configure(text=totalTime) 
+        self.win.after(1000, self.updateClock)
+
 
     def check(self,event):
         """This method checks the users input to the desired key in the txt.
@@ -117,12 +162,17 @@ class main():
         temp = str(event.char)
         #print(temp)
         wanted = self.phrase[len(self.userP)]
-
-
+        try: #when a blank line is loaded oneAhead causes an error
+            oneAhead=self.phrase[len(self.userP)+1] #this is to highlight spaces
+        except:
+            pass
         if temp == wanted:
             print(temp)
             self.userP = self.userP + temp
-            self.highlight(self.text)
+            if oneAhead== " ":
+                self.highlight(self.text,True)
+            else:
+                self.highlight(self.text)
         else:
             self.error += 1
 
@@ -134,7 +184,11 @@ class main():
         spaces=0
         self.txt = self.file.readline()
         print(self.txt)
-        self.txt = self.txt.decode(encoding = 'ascii')
+        self.txt = self.txt.decode(encoding = 'ascii', errors='ignore')
+        ####
+        self.txt2 = self.file2.readline()
+        print(self.txt2)
+        self.txt2 = self.txt2.decode(encoding = 'ascii', errors='ignore')
 
         if len(self.txt.strip()) == 0 : #skips blank lines
             print('skipped')
@@ -143,26 +197,42 @@ class main():
             spaces+=1
         print(spaces)
         self.phrase = self.txt[spaces:]
+        """
+        attempt=[]
+        for each in self.phrase:
+            if each.isalpha() or each.isnumeric():
+                attempt.append(each)
+        print(attempt)  This could possibly be used if reading errors persist
+        """
 
         self.text.config(state = NORMAL)
         self.text.delete('1.0','end')
         self.text.insert('1.0',self.phrase)
         self.text.config(state = DISABLED)
 
+        self.text2.config(state = NORMAL)
+        self.text2.delete('1.0','end')
+        self.text2.insert('1.0',self.txt2)
+        self.text2.config(state = DISABLED)
+
 
         #self.phrase=  #clear the data
         self.userP = ''
 
 
-    def highlight(self,text):
+    def highlight(self,text,space=False):
         """ This simply highlights the desired character."""
         wanted = len(self.userP)
 
         text.tag_delete('red')
-
+        text.tag_delete('redBack')
 
         txtInput = (str(1) + '.' + str(wanted))
         print(txtInput)
+        if space==True:
+
+            text.tag_add('redBack',txtInput)
+            text.tag_config('redBack',background = 'red')
         text.tag_add('red',txtInput)
         text.tag_config('red',foreground = 'red')
 
