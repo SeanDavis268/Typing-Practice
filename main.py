@@ -12,7 +12,7 @@ class main():
        be selected by entering their names into the entry box."""
     def __init__(self):
         self.top = Tk()
-        self.startLabel=Label(self.top, text = "Pick what to practice. Type in the desired file name in the textBox")
+        self.startLabel = Label(self.top, text = "Pick what to practice. Type in the desired file name in the textBox", font=12)
         self.startLabel.pack()
 
         self.phrase = ''
@@ -25,15 +25,34 @@ class main():
         ####file reading#####
         cwd = os.getcwd()
         textFiles = [f for f in os.listdir(cwd) if f.endswith('.txt')]
+        progressFiles = textFiles #saves reading the directory twice
 
-        prettyFiles=textFiles[0]
+        textFiles = [f for f in textFiles if  f[0:6] != "zFsavE"] #this ignores the progress Files
+
+        self.progressFiles = [ f for f in progressFiles if f[0:6] == "zFsavE" ]
+        #####progressFiles reading and organizing
+        self.prettyProgress=""
+        for each in self.progressFiles:
+            throwAway=open(each,"r")
+            throwAway=throwAway.read()
+
+            self.prettyProgress=self.prettyProgress +throwAway+ ", "
+
+        #########################################
+
+        prettyFiles = textFiles[0]
 
         for each in textFiles[1:]:
-            prettyFiles=prettyFiles+", "+ each
+            prettyFiles = prettyFiles + ", " + each
 
         print(prettyFiles)
 
-        Label(self.start, text = prettyFiles).pack()
+        Label(self.start, text="Saved Progress: "+self.prettyProgress, font=10).pack()
+
+        Label(self.start, text = "Start a new txt file: " +prettyFiles, font=10).pack()
+        Label(self.start,text = "Enter the desired file name with extention in the text box Below.", font=12).pack()
+        Label(self.start, text = "The '?' after the extension tells the program what line to start on ", font=12).pack()
+
         entryBox = Text(self.start,width = '12', height = '1')
         myList = []
         myList.append(entryBox)
@@ -59,55 +78,68 @@ class main():
         files = [f for f in os.listdir(cwd) if f.endswith('.txt')]
         #print(files)
         print(txt)
-        yeet = str(txt[0:-1])
+        yeet = str(txt[0:-1]) #removes newline character
         self.txt = txt
+
+        splitter=yeet.split("?") #splits on the ? seperater for line number
+        splitter.append(0) #prevents list index errors
+        yeet=splitter[0] #grabs the file name
+
+        self.fileTitle=yeet
+        self.desiredLine=int(splitter[1]) #grabs the desired line, 0 if not specified
+        desiredLineCounter=self.desiredLine
+
+
         try:
-            #print(container)
-             #IT currently won't accept any input as correct
+
             print(yeet)
             self.file = open(yeet,'rb')
             #####
-            self.file2=open(yeet,'rb') #allows display of next line
+            self.file2 = open(yeet,'rb') #allows display of next line
             print('loaded')
-            self.txt = self.file.readline()
-            #######
-            self.txt2= self.file2.readline()
-            self.txt2= self.file2.readline()
 
-            self.txt = self.txt.decode(encoding ='ascii', errors = 'ignore')
+            while desiredLineCounter>=0:
+                self.txt = self.file.readline()
+                #######
+                self.txt2 = self.file2.readline()
+                self.txt2 = self.file2.readline() #done twice so it reads the nextline
+                desiredLineCounter-=1
+
+
+            self.txt = self.txt.decode(encoding = 'ascii', errors = 'ignore')
             print(self.txt)
             ####
-            self.txt2 = self.txt2.decode(encoding ='ascii', errors = 'ignore')
+            self.txt2 = self.txt2.decode(encoding = 'ascii', errors = 'ignore')
 
+            self.phrase = self.txt
+
+            self.startLabel.destroy()
+            self.start.destroy()
+
+            self.phase2()
 
         except:
             print('failed')
 
-        self.phrase = self.txt
-        #print(self.phrase)
-        self.startLabel.destroy()
-        self.start.destroy()
 
-        self.phase2()
 
     def phase2(self):
         """This is the window where the the text from the doc is displayed.
            It grabs key inputs and checks them with check()"""
 
         self.win = Frame(self.top)
-        self.minutes=0
-        self.seconds=0
+        self.minutes = 0
+        self.seconds = 0
         #self.startTime = time.strftime("%H:%M:%S")
         #self.startTime=self.startTime[3:]#tracks minutes and seconds
         #self.Sminutes=self.startTime[:2]
         #self.Sseconds=self.startTime[3:]
 
+        self.currentFile = Label(self.win,text = self.fileTitle)
+        self.currentFile.pack()
 
-        self.phraseLabel = Label(self.win, text = self.phrase)
-        self.phraseLabel.pack()
-
-        self.userPhrase=Label(self.win,text = self.userP)
-        self.userPhrase.pack()
+        self.phraseLabel = Label(self.win, text ="Your current line is "+ str(self.desiredLine))
+        self.phraseLabel.pack() #this displays the line number
 
 
         self.text=Text(self.win, height = 3, width = 95)
@@ -120,8 +152,11 @@ class main():
         self.text2['state'] = DISABLED
         self.text2.pack()
 
-        self.timer=Label(self.win, text="0")
+        self.timer = Label(self.win, text = "0")
         self.timer.pack()
+
+        self.saveButton=Button(self.win, text="Save Progress", command=lambda:self.saveProgress())
+        self.saveButton.pack()
 
 
 
@@ -131,6 +166,17 @@ class main():
 
         self.updateClock()
         self.win.mainloop()
+
+
+    def saveProgress(self):
+        print(self.fileTitle)
+        print(self.desiredLine)
+        saveFile= open("zFsavE" +str(self.fileTitle), "w+")  #zFsave differentiats it from other files
+        saveFile.write(str(self.fileTitle)+ "?" +str(self.desiredLine))
+        #^this will be displayed so the user can remember where they left off
+
+
+
 
     def updateClock(self):
         """ I realised after creating the code below it was unnecesarrily
@@ -143,13 +189,13 @@ class main():
         #elapsedSec=int(Nseconds)-int(self.Sseconds)
         #elapsedTime=str(elapsedMin)+":"+str(elapsedSec)
         #print(elapsedTime)
-        self.seconds+=1
+        self.seconds += 1
 
-        if self.seconds>=60:
-            self.seconds=0
-            self.minutes+=1
-        totalTime=str(self.minutes)+":"+str(self.seconds)
-        self.timer.configure(text=totalTime) 
+        if self.seconds >= 60:
+            self.seconds = 0
+            self.minutes += 1
+        totalTime = str(self.minutes) + ":" + str(self.seconds)
+        self.timer.configure(text = totalTime)
         self.win.after(1000, self.updateClock)
 
 
@@ -163,13 +209,13 @@ class main():
         #print(temp)
         wanted = self.phrase[len(self.userP)]
         try: #when a blank line is loaded oneAhead causes an error
-            oneAhead=self.phrase[len(self.userP)+1] #this is to highlight spaces
+            oneAhead = self.phrase[len(self.userP)+1] #this is to highlight spaces
         except:
             pass
         if temp == wanted:
             print(temp)
             self.userP = self.userP + temp
-            if oneAhead== " ":
+            if oneAhead == " ":
                 self.highlight(self.text,True)
             else:
                 self.highlight(self.text)
@@ -181,20 +227,20 @@ class main():
 
     def nextLine(self):
         print('########################')
-        spaces=0
+        spaces = 0
         self.txt = self.file.readline()
         print(self.txt)
-        self.txt = self.txt.decode(encoding = 'ascii', errors='ignore')
+        self.txt = self.txt.decode(encoding = 'ascii', errors = 'ignore')
         ####
         self.txt2 = self.file2.readline()
         print(self.txt2)
-        self.txt2 = self.txt2.decode(encoding = 'ascii', errors='ignore')
+        self.txt2 = self.txt2.decode(encoding = 'ascii', errors = 'ignore')
 
         if len(self.txt.strip()) == 0 : #skips blank lines
             print('skipped')
             self.nextLine()
-        while self.txt[spaces]==' ': #removes spaces from the start of the line
-            spaces+=1
+        while self.txt[spaces] == ' ': #removes spaces from the start of the line
+            spaces += 1
         print(spaces)
         self.phrase = self.txt[spaces:]
         """
@@ -215,12 +261,15 @@ class main():
         self.text2.insert('1.0',self.txt2)
         self.text2.config(state = DISABLED)
 
+        self.desiredLine+=1#desiredLine doubles as a counter
+        self.phraseLabel.configure(text=str(self.desiredLine))
+
 
         #self.phrase=  #clear the data
         self.userP = ''
 
 
-    def highlight(self,text,space=False):
+    def highlight(self,text,space = False):
         """ This simply highlights the desired character."""
         wanted = len(self.userP)
 
@@ -229,7 +278,7 @@ class main():
 
         txtInput = (str(1) + '.' + str(wanted))
         print(txtInput)
-        if space==True:
+        if space == True:
 
             text.tag_add('redBack',txtInput)
             text.tag_config('redBack',background = 'red')
