@@ -19,6 +19,10 @@ class main():
         self.userP = ''
         self.error = 0
 
+        #option variables
+
+        self.fontSizeOp=IntVar()
+
         self.start = Frame(self.top)
         self.start.pack()
         self.phrase = 'the phrase didn"t load' #default phrase
@@ -60,17 +64,35 @@ class main():
         widget = Button(self.start,text='click to load file', command=lambda:self.phraseGen(entryBox.get('1.0',END),textFiles))
         widget.pack()
 
-        Button(self.start,text = 'woodchuck',command = lambda:self.phraseGen('how much would could a woodchuck chuck')).pack()
-        Button(self.start,text = 'tounge tied',command = lambda:self.phraseGen('Sally sells sea shells down by the sea shore')).pack()
+        #Button(self.start,text = 'woodchuck',command = lambda:self.phraseGen('how much would could a woodchuck chuck')).pack()
+        #Button(self.start,text = 'tounge tied',command = lambda:self.phraseGen('Sally sells sea shells down by the sea shore')).pack()
+        Button(self.start, text="options", command=lambda:self.optionsMenu()).pack()
 
 
 
         self.start.mainloop()
 
 
+    def optionsMenu(self):
+        """ opens new window with entry boxes for options. can be canceled and can confirm the users choices. either results in
+            control being brought back to the main window. main window is frozen for these times """
+        opWindow=Tk()
+        Label(opWindow,text="Font Size").pack()
+        font12=Radiobutton(opWindow,text='12', variable= self.fontSizeOp,value=12, command=lambda: self.fontSizeOp.set(12))
+        font16=Radiobutton(opWindow,text='16',variable= self.fontSizeOp, value=16, command=lambda: self.fontSizeOp.set(16))
+        print(self.fontSizeOp.get())   #where i left off. font var doesnt change bc of the button
+        font12.pack()
+        font16.pack()
+
+
+
+
+
+
 
 
     def phraseGen(self,txt,container=False):
+
         """This method takes the txt doc and attempts to read its first line
            It reads the doc as ascii to avoid characters not on the keyboard.
            After it starts phase2()."""
@@ -126,7 +148,7 @@ class main():
     def phase2(self):
         """This is the window where the the text from the doc is displayed.
            It grabs key inputs and checks them with check()"""
-
+        print(self.fontSizeOp.get())
         self.win = Frame(self.top)
         self.minutes = 0
         self.seconds = 0
@@ -134,6 +156,7 @@ class main():
         #self.startTime=self.startTime[3:]#tracks minutes and seconds
         #self.Sminutes=self.startTime[:2]
         #self.Sseconds=self.startTime[3:]
+
 
         self.currentFile = Label(self.win,text = self.fileTitle)
         self.currentFile.pack()
@@ -145,6 +168,7 @@ class main():
         self.text=Text(self.win, height = 3, width = 95)
         self.text.insert('end',self.phrase)
         self.text['state'] = DISABLED
+        self.text.config(font=("Arial",self.fontSizeOp.get())) #i changed it here
         self.text.pack()
 
         self.text2=Text(self.win, height = 3, width = 95)
@@ -157,6 +181,9 @@ class main():
 
         self.saveButton=Button(self.win, text="Save Progress", command=lambda:self.saveProgress())
         self.saveButton.pack()
+
+        self.backButton=Button(self.win, text="Return to selection", command=lambda:self.returnSel())
+        self.backButton.pack()
 
 
 
@@ -175,6 +202,13 @@ class main():
         saveFile.write(str(self.fileTitle)+ "?" +str(self.desiredLine))
         #^this will be displayed so the user can remember where they left off
 
+    def returnSel(self):
+        print('returning to Selection')
+        try:
+            self.top.destroy()
+        except:
+            print("this shouldn't appear")
+        main()
 
 
 
